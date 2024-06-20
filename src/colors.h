@@ -1,0 +1,10 @@
+#ifndef __COLORS_H__
+#define __COLORS_H__
+
+enum COLORS
+{
+    BACKGROUND = 0x313236FF,
+    SURFACE = 0x28292CFF,
+    SURFACE_HIGHLIGHT = 0x6D717AFF,
+} ;
+#endif
