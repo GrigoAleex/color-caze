@@ -17,7 +17,10 @@ typedef struct {
     const int PIXEL_PT_RATION;
 } WindowState;
 
-
+enum TOOLS {
+    PENCIL,
+    ERASER
+};
 
 void Start(WindowState*);
 void Update(WindowState*);

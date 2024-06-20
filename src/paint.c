@@ -54,17 +54,46 @@ void DrawColors(int x, int y, int *selectedColor, const Color* colors, const int
     }
 }
 
-void DrawUI(WindowState *state, const Color* colors, const int colorsCount, int* selectedColor, const Rectangle drawingBox)
+void DrawTools(int x, int y, enum TOOLS *tool) {
+    const int toolSize = 24;
+    const Color toolColor = GetColor(BACKGROUND);
+    const Color toolHighlight = GetColor(SURFACE);
+    const Color toolSelected = RAYWHITE;
+
+    Rectangle pencilRect = {x, y, toolSize, toolSize};
+    Rectangle eraserRect = {x + 32, y, toolSize, toolSize};
+
+    DrawRectangleRec(pencilRect, *tool == PENCIL ? toolSelected : toolHighlight);
+    DrawRectangleRec(eraserRect, *tool == ERASER ? toolSelected : toolHighlight);
+
+    if (CheckCollisionPointRec(GetMousePosition(), pencilRect)) {
+        DrawColorHighlight(x - 2, y - 2, toolSize + 4, *tool == PENCIL ? toolSelected : toolHighlight);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            *tool = PENCIL;
+        }
+    }
+
+    if (CheckCollisionPointRec(GetMousePosition(), eraserRect)) {
+        DrawColorHighlight(x - 2 + 32, y - 2, toolSize + 4, *tool == ERASER ? toolSelected : toolHighlight);
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            *tool = ERASER;
+        }
+    }
+}
+
+void DrawUI(WindowState *state, enum TOOLS *tool, const Color* colors, const int colorsCount, int* selectedColor, const Rectangle drawingBox)
 {
     ClearBackground(GetColor(BACKGROUND));
     DrawRectangleRec(drawingBox, GetColor(SURFACE));
     DrawColors(state->width * 0.01, state->height - 54, selectedColor, colors, colorsCount);
+    DrawTools(state->width * 0.01 + colorsCount * 34, state->height - 54, tool);
 }
 
-void RegisterDrawnPoints(Point **points, size_t *pointsCount, Vector2* lastMousePosition, Rectangle drawingBox, const int pointSize, const Color color) {
+void RegisterDrawnPoints(Point **points, size_t *pointsCount, Vector2* lastMousePosition, Rectangle drawingBox, const int pointSize, const Color color, const enum TOOLS tool) {
     Vector2 mousePosition = GetMousePosition();
     drawingBox.width -= pointSize;
     drawingBox.height -= pointSize;
+    Color pointColor = tool == ERASER ? GetColor(SURFACE) : color;
     
     if (!CheckCollisionPointRec(mousePosition, drawingBox)) return;
 
@@ -75,11 +104,11 @@ void RegisterDrawnPoints(Point **points, size_t *pointsCount, Vector2* lastMouse
 
         for (int i = 0; i < steps; i++) {
             *lastMousePosition = Vector2Add(*lastMousePosition, stepVector);
-            points[(*pointsCount)++] = point_create(*lastMousePosition, color);
+            points[(*pointsCount)++] = point_create(*lastMousePosition, pointColor);
         }
     }
 
-    points[(*pointsCount)++] = point_create(*lastMousePosition, color);
+    points[(*pointsCount)++] = point_create(*lastMousePosition, pointColor);
     *lastMousePosition = mousePosition;
 }
 
@@ -92,6 +121,7 @@ void Update(WindowState *state) {
     const int colorsCount = sizeof colors / sizeof (struct Color);
     int selectedColor = 0;
 
+    enum TOOLS tool = PENCIL;
 
     while (!WindowShouldClose())
     {
@@ -100,11 +130,11 @@ void Update(WindowState *state) {
         }
 
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            RegisterDrawnPoints(state->points, &state->pointsCount, &lastMousePosition, drawingBox, state->PIXEL_PT_RATION, colors[selectedColor]);
+            RegisterDrawnPoints(state->points, &state->pointsCount, &lastMousePosition, drawingBox, state->PIXEL_PT_RATION, colors[selectedColor], tool);
         }
 
         BeginDrawing();
-        DrawUI(state, colors, colorsCount, &selectedColor, drawingBox);
+        DrawUI(state, &tool, colors, colorsCount, &selectedColor, drawingBox);
         DrawPoints(state->points, state->pointsCount, state->PIXEL_PT_RATION);
         EndDrawing();
     }
