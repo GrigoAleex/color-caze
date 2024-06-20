@@ -7,7 +7,7 @@
 
 void Start(WindowState *state)
 {
-    InitWindow(state->width, state->height, "Chad Paint");
+    InitWindow(state->width, state->height, "Color Caze");
     SetTargetFPS(144);
 
     state->points = (Point **)calloc(sizeof(Point*), state->width * state->height / state->PIXEL_PT_RATION);
