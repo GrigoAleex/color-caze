@@ -7,19 +7,25 @@
 
 void Start(WindowState *state)
 {
-    
     InitWindow(state->width, state->height, "Chad Paint");
     SetTargetFPS(144);
 
-    state->points = (Vector2 *)malloc(sizeof(Vector2) * state->width * state->height / state->PIXEL_PT_RATION);
+    state->points = (Point **)calloc(sizeof(Point*), state->width * state->height / state->PIXEL_PT_RATION);
     state->pointsCount = 0;
 }
 
-void DrawPoints(Vector2 *points, size_t pointsCount, Color color, size_t size)
+Point* point_create(Vector2 pos, Color color) {
+    Point *point = (Point *)malloc(sizeof(Point));
+    point->position = pos;
+    point->color = color;
+    return point;
+}
+
+void DrawPoints(Point **points, size_t pointsCount, size_t size)
 {
     for (size_t i = 0; i < pointsCount; i++)
     {
-        DrawRectangleV(points[i], (Vector2){size, size}, color);
+        DrawRectangleV(points[i]->position, (Vector2){size, size}, points[i]->color);
     }
 }
 void DrawColorHighlight (const int x, const int y, const int size, const Color color) {
@@ -55,7 +61,7 @@ void DrawUI(WindowState *state, const Color* colors, const int colorsCount, int*
     DrawColors(state->width * 0.01, state->height - 54, selectedColor, colors, colorsCount);
 }
 
-void RegisterDrawnPoints(Vector2 *points, size_t *pointsCount, Vector2* lastMousePosition, Rectangle drawingBox, const int pointSize) {
+void RegisterDrawnPoints(Point **points, size_t *pointsCount, Vector2* lastMousePosition, Rectangle drawingBox, const int pointSize, const Color color) {
     Vector2 mousePosition = GetMousePosition();
     drawingBox.width -= pointSize;
     drawingBox.height -= pointSize;
@@ -69,23 +75,23 @@ void RegisterDrawnPoints(Vector2 *points, size_t *pointsCount, Vector2* lastMous
 
         for (int i = 0; i < steps; i++) {
             *lastMousePosition = Vector2Add(*lastMousePosition, stepVector);
-            points[(*pointsCount)++] = *lastMousePosition;
+            points[(*pointsCount)++] = point_create(*lastMousePosition, color);
         }
     }
 
-    points[(*pointsCount)++] = mousePosition;
+    points[(*pointsCount)++] = point_create(*lastMousePosition, color);
     *lastMousePosition = mousePosition;
 }
 
 
 void Update(WindowState *state) {
-    Vector2 lastMousePosition = {0, 0};
-    bool firstPoint = true;
-    
-    int selectedColor = 0;
     const Rectangle drawingBox = {state->width * 0.01, 16, state->width * 0.98, state->height - 80}; 
+    Vector2 lastMousePosition = {0, 0};
+    
     const Color colors[] = { BLACK, RAYWHITE, GRAY, RED, YELLOW, GREEN, BLUE, PINK, PURPLE, ORANGE };
     const int colorsCount = sizeof colors / sizeof (struct Color);
+    int selectedColor = 0;
+
 
     while (!WindowShouldClose())
     {
@@ -94,12 +100,12 @@ void Update(WindowState *state) {
         }
 
         if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
-            RegisterDrawnPoints(state->points, &state->pointsCount, &lastMousePosition, drawingBox, state->PIXEL_PT_RATION);
+            RegisterDrawnPoints(state->points, &state->pointsCount, &lastMousePosition, drawingBox, state->PIXEL_PT_RATION, colors[selectedColor]);
         }
 
         BeginDrawing();
         DrawUI(state, colors, colorsCount, &selectedColor, drawingBox);
-        DrawPoints(state->points, state->pointsCount, colors[selectedColor], state->PIXEL_PT_RATION);
+        DrawPoints(state->points, state->pointsCount, state->PIXEL_PT_RATION);
         EndDrawing();
     }
 
