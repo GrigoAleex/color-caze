@@ -55,6 +55,29 @@ void DrawUI(WindowState *state, const Color* colors, const int colorsCount, int*
     DrawColors(state->width * 0.01, state->height - 54, selectedColor, colors, colorsCount);
 }
 
+void RegisterDrawnPoints(Vector2 *points, size_t *pointsCount, Vector2* lastMousePosition, Rectangle drawingBox, const int pointSize) {
+    Vector2 mousePosition = GetMousePosition();
+    drawingBox.width -= pointSize;
+    drawingBox.height -= pointSize;
+    
+    if (!CheckCollisionPointRec(mousePosition, drawingBox)) return;
+
+    float distance = Vector2Distance(*lastMousePosition, mousePosition);
+    if (distance > 0) {
+        int steps = (int)(distance / pointSize);
+        Vector2 stepVector = Vector2Scale(Vector2Normalize(Vector2Subtract(mousePosition, *lastMousePosition)), pointSize);
+
+        for (int i = 0; i < steps; i++) {
+            *lastMousePosition = Vector2Add(*lastMousePosition, stepVector);
+            points[(*pointsCount)++] = *lastMousePosition;
+        }
+    }
+
+    points[(*pointsCount)++] = mousePosition;
+    *lastMousePosition = mousePosition;
+}
+
+
 void Update(WindowState *state) {
     Vector2 lastMousePosition = {0, 0};
     bool firstPoint = true;
@@ -66,39 +89,14 @@ void Update(WindowState *state) {
 
     while (!WindowShouldClose())
     {
-         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            firstPoint = true;
+         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            lastMousePosition = GetMousePosition();
         }
 
-        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-        {
-            Vector2 mousePosition = GetMousePosition();
-            if (firstPoint)
-            {
-                firstPoint = false;
-            }
-            else
-            {
-                float distance = Vector2Distance(lastMousePosition, mousePosition);
-                if (distance > state->PIXEL_PT_RATION)
-                {
-                    int steps = distance / state->PIXEL_PT_RATION;
-                    Vector2 stepVector = Vector2Scale(Vector2Normalize(Vector2Subtract(mousePosition, lastMousePosition)), state->PIXEL_PT_RATION);
-
-                    for (int i = 0; i < steps; i++)
-                    {
-                        lastMousePosition = Vector2Add(lastMousePosition, stepVector);
-                        state->points[state->pointsCount] = lastMousePosition;
-                        state->pointsCount++;
-                    }
-                }
-            }
-            state->points[state->pointsCount] = mousePosition;
-            lastMousePosition = mousePosition;
-            state->pointsCount++;
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+            RegisterDrawnPoints(state->points, &state->pointsCount, &lastMousePosition, drawingBox, state->PIXEL_PT_RATION);
         }
-        
+
         BeginDrawing();
         DrawUI(state, colors, colorsCount, &selectedColor, drawingBox);
         DrawPoints(state->points, state->pointsCount, colors[selectedColor], state->PIXEL_PT_RATION);
