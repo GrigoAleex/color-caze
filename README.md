@@ -1,4 +1,4 @@
-<h1 align="center"> Color caze </h1>
+<h1 align="center"> Color craze </h1>
 <p align="center">A minimalist paint made in c</p>
     
 ## Overview
