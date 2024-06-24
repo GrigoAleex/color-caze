@@ -5,14 +5,9 @@
 #include <stdio.h>
 
 typedef struct {
-    Vector2 position;
-    Color color;
-} Point;
-
-typedef struct {
     size_t width;
     size_t height;
-    Point **points;
+    Color *matrix;
     size_t pointsCount;
     const int PIXEL_PT_RATION;
 } WindowState;
