@@ -8,7 +8,7 @@ int main(void)
     WindowState state = {
         .width = UI_WIDTH,
         .height = UI_HEIGHT,
-        .pencilSize = 5
+        .PIXEL_PT_RATION = 10
     };
 
     Start(&state);

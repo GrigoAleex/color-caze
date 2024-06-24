@@ -9,7 +9,7 @@ typedef struct {
     size_t height;
     Color *matrix;
     size_t pointsCount;
-    const int PIXEL_PT_RATION;
+    int pencilSize;
 } WindowState;
 
 enum TOOLS {
