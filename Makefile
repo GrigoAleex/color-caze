@@ -1,6 +1,6 @@
 frameworks = -Ilib/raylib/src -Llib/raylib/src -lraylib  -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL
 build_target = build/paint
-src = src/paint.c src/ui.c
+src = src/paint.c src/ui.c src/draw.c
 
 all: raylib.a
 	gcc -o $(build_target) main.c $(frameworks)  $(src)

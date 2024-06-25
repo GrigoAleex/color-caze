@@ -7,15 +7,9 @@
 typedef struct {
     size_t width;
     size_t height;
-    Color *matrix;
-    size_t pointsCount;
+    RenderTexture2D canvas;
     int pencilSize;
 } WindowState;
-
-enum TOOLS {
-    PENCIL,
-    ERASER
-};
 
 void Start(WindowState*);
 void Update(WindowState*);
